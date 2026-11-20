@@ -26,6 +26,8 @@ def main():
     for name in ("LICENSE", "THIRD_PARTY.md"):
         shutil.copyfile(repo / name, package / "orbita" / name)
     shutil.copyfile(repo / "app/r36s/README.md", package / "orbita/README.md")
+    for name in ("INSTALL.md", "INSTALL.pt-BR.md"):
+        shutil.copyfile(repo / "docs" / name, package / "orbita" / name)
     validation = repo / "docs/port-r36sh/SEARCH-2026-11-20.md"
     if validation.is_file():
         shutil.copyfile(validation, package / "orbita/SEARCH-VALIDATION.md")

@@ -24,6 +24,7 @@
 </p>
 
 <p align="center">
+  <a href="#download-e-instalação">Download</a> ·
   <a href="#estado-do-projeto">Status</a> ·
   <a href="#comece-por-aqui">Primeiros passos</a> ·
   <a href="#arquitetura">Arquitetura</a> ·
@@ -36,6 +37,14 @@ ao portátil. Este fork adapta o núcleo original do Orbita para Xbox 360 ao
 Linux/ARM, usando SDL2, libcurl, WebRTC, FFmpeg e Opus. Autorize sua conta Microsoft
 pelo celular ou PC e, depois, navegue e inicie os jogos no aparelho. Não é preciso
 ter conta no site Orbita, convite ou chave beta.
+
+## Download e instalação
+
+Abra as [Releases](https://github.com/D1Alexandre/orbita-R36SH/releases) para
+baixar o **ZIP R36S/H ARM64 pronto para instalar** e siga o
+[tutorial de instalação](docs/INSTALL.pt-BR.md). Ele explica a cópia para o cartão,
+login Microsoft, controles, atualização e solução de problemas. Escolha o ZIP
+do aplicativo em Assets; os arquivos automáticos Source code são para desenvolvedores.
 
 ## Por que desenvolver no Orbita?
 
@@ -208,6 +217,7 @@ login Microsoft e arquivos da conta fora de issues e pull requests.
 
 ## Documentação
 
+- [Baixar e instalar no ArkOS](docs/INSTALL.pt-BR.md)
 - [Build Linux, instalação, controles e solução de problemas](app/r36s/README.md)
 - [Estado do port e próximas verificações no aparelho](docs/port-r36sh/README.md)
 - [Validação inicial e descobertas do dispositivo](docs/port-r36sh/VALIDATION-2026-11-13.md)
