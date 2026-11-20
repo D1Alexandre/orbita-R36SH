@@ -267,7 +267,7 @@ static void t_check(void) {
     CHECK(file_is("xenon.elf", g_old, g_old_n) && fsz(XCU_NEW) < 0);
     s = check("0.20.0", "{lixo");
     CHECK(s.phase == XCU_FAILED);
-    /* beta key no header */
+    /* A build pública ignora chaves antigas; a fechada usa a chave + console. */
     {
         char p[600];
         snprintf(p, sizeof(p), "%s/XC360/BETAKEY.TXT", g_root);
@@ -276,8 +276,16 @@ static void t_check(void) {
         g_saw_console = 0;
         xcu_set_console_id("0123456789abcdef0123456789abcdef");
         s = check("0.20.0", g_good);
-        CHECK(s.phase == XCU_AVAILABLE && g_saw_key);
+        CHECK(s.phase == XCU_AVAILABLE);
+#if defined(XCLOUD360_BETA) && XCLOUD360_BETA
+        CHECK(g_saw_key);
         CHECK(g_saw_console);   /* X-Console junto da chave */
+#else
+        CHECK(!g_saw_key && !g_saw_console);
+        s = install();
+        CHECK(s.phase == XCU_DONE && !g_saw_key && !g_saw_console);
+        CHECK(file_is("xenon.elf", g_elf, g_elf_n));
+#endif
         unlink(p);
         g_saw_key = 0;
         s = check("0.20.0", g_good);

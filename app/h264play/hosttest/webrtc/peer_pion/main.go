@@ -199,6 +199,7 @@ func main() {
 	h264 := flag.String("h264", "", "Annex-B H.264 file to stream (looped)")
 	fps := flag.Int("fps", 30, "frame rate to pace the stream at")
 	seconds := flag.Int("seconds", 20, "max run time")
+	opusSilence := flag.Bool("opus-silence", false, "send decodable Opus silence instead of byte-test payloads")
 	flag.Parse()
 	log.SetFlags(log.Lmicroseconds)
 	log.SetPrefix("[pion] ")
@@ -470,6 +471,9 @@ func main() {
 			p := make([]byte, l)
 			for i := range p {
 				p[i] = byte(n*7 + i*13)
+			}
+			if *opusSilence {
+				p = []byte{0xf8, 0xff, 0xfe} // valid 20 ms Opus silence
 			}
 			if at.WriteSample(media.Sample{Data: p, Duration: 20 * time.Millisecond}) == nil {
 				sum := sha1.Sum(p)

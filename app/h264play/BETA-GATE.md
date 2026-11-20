@@ -1,8 +1,27 @@
-# Chave beta presa ao console (v0.20.3)
+# Acesso público e chave beta opcional
 
-Build `BETA=1` (padrão do Makefile): sem chave beta válida **o app não abre**
-(nem login, nem capas, nem log). A futura versão estável pública compila com
-`make BETA=0` (sem chave, sem tela; `make clean` ao trocar). Código:
+O padrão do Makefile é `BETA=0`: o executável abre sem conta no site,
+convite ou chave beta. O usuário só precisa fazer o login Microsoft no app.
+A tela de ativação e a linha de chave nas Configurações não aparecem.
+As atualizações usam o canal público, mesmo que tenha sobrado um
+`XC360/BETAKEY.TXT` de uma instalação antiga.
+
+Para gerar o executável público, no ambiente com a toolchain Xenon:
+
+```sh
+source scripts/env.sh
+make -C app/h264play clean
+make -C app/h264play BETA=0
+```
+
+O arquivo gerado é `app/h264play/h264play.elf32`; distribua-o como `xenon.elf`.
+Uma versão antiga já compilada com `BETA=1` precisa ser substituída pelo
+executável público; alterar o site não remove a ativação daquele binário.
+
+`BETA=1` continua disponível apenas por opção explícita para testes fechados:
+sem chave beta válida **o app não abre** (nem login, nem capas, nem log).
+Use `make clean` ao trocar entre os modos. O restante deste documento descreve
+esse modo fechado. Código:
 `source/beta/` (`xc_beta.{h,c}` núcleo portável, `xcb_port_xenon.c`
 plataforma, `xc_keypad.{h,c}` teclado na tela); desenho em `source/ui/xui_home.c`
 (`xui_key_frame`, `xui_settings_frame`); fluxo no `main.c` (`beta_poll`).

@@ -50,6 +50,32 @@ Every future entry must record:
 - destination path in this tree
 - modifications summary
 
+## Linux R36S/H target
+
+The following system libraries are dynamically linked; their
+sources and binaries are not vendored. The ARM64 package uses the device's
+SDL and graphics drivers. Versions below describe the Ubuntu 20.04 build used
+for initial validation, rather than a promise about every ArkOS image.
+
+| Project | Source / validated version | License | Use |
+|---|---|---|---|
+| SDL2 | libsdl-org/SDL, 2.0.10 (Ubuntu package) | zlib | `app/r36s/src/{main,video_test}.c`: display, events and game controller interface |
+| libcurl | curl/curl, 7.68.0 (Ubuntu package, system TLS backend) | curl license (MIT-style) | `platform/linux/https_curl.c`: verified HTTPS for the reused login/catalog core |
+| FFmpeg | FFmpeg/FFmpeg, 4.2.7 (Ubuntu package) | LGPL-2.1-or-later / GPL-2.0-or-later, depending on the library build | Streaming and local H.264 decode, demux and pixel conversion |
+| Opus | xiph/opus, 1.3.1 (Ubuntu package) | BSD-3-Clause | Streaming audio decode |
+
+The streaming executable also statically links libpeer at
+`9319aa434cb9e893faed0293ba9d2a21eca59c8b`, libsrtp 2.4.2, usrsctp and
+mbedTLS 3.4.0, with the patches and ports documented above and in
+`deps/webrtc-linux/README.md`. Their license files ship in `orbita/licenses`.
+The green-nx libpeer patch is vendored from commit
+`b52dd73d2bcdd043316a2623d5871dcbd2e5000b` (GPL-3.0); only `src/*` changes
+are applied. Session and data-channel protocol code retain their existing
+green-nx GPL-3.0 provenance. The complete linked executable is GPL-3.0.
+
+The existing cJSON and rasterized Inter entries above also apply to `app/r36s`.
+The package includes the repository's GPL-3.0 license, this ledger and Inter's OFL.
+
 ## External subprocess dependencies
 
 Not linked into XCloud360, called only as separate processes. Their licenses do NOT propagate to this project.

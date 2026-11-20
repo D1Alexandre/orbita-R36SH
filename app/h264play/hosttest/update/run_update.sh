@@ -68,9 +68,15 @@ ps = R.sign(pr, k); assert R.verify(ps, k) and ps["mandatory"] is False
 legacy = {x: y for x, y in so.items() if x not in ("mandatory", "sig2")}
 assert R.verify(legacy, k)
 PY
-    gcc $CF -fsanitize=address,undefined -o "$OUT/update_unit" "$HERE/update_unit.c" $CORE \
-        "$MBED/libmbedtls-xc360.a" -lpthread
-    "$OUT/update_unit" "$FX" "$OUT/usb" || rc=1
+    # Sem macro = acesso público por padrão; BETA=1 preserva os testes fechados.
+    for mode in public beta; do
+        BF=""
+        [ "$mode" = beta ] && BF="-DXCLOUD360_BETA=1"
+        gcc $CF $BF -fsanitize=address,undefined -o "$OUT/update_unit-$mode" "$HERE/update_unit.c" $CORE \
+            "$MBED/libmbedtls-xc360.a" -lpthread
+        echo "--- update ($mode)"
+        "$OUT/update_unit-$mode" "$FX" "$OUT/usb-$mode" || rc=1
+    done
 fi
 if [ "$WHAT" = live ] || [ "$WHAT" = all ]; then
     gcc $CF -o "$OUT/update_live" "$HERE/update_live.c" $CORE $NET "$MBED/libmbedtls-xc360.a" -lpthread

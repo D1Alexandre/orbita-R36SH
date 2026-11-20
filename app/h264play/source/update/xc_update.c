@@ -284,11 +284,12 @@ static int cancelled(void) { return g_cancel; }
 static char g_console[40];
 void xcu_set_console_id(const char *id) { snprintf(g_console, sizeof(g_console), "%s", id ? id : ""); }
 
-/* "X-Api-Key: <chave>\r\nX-Console: <id>\r\n" se houver XC360/BETAKEY.TXT
- * válido (sem ID, só a chave). */
+/* Só builds fechadas usam BETAKEY.TXT: uma chave antiga no pendrive não
+ * pode levar a build pública de volta a uma atualização com ativação beta. */
 static void beta_header(char *out, size_t cap) {
-    char k[80];
     out[0] = 0;
+#if defined(XCLOUD360_BETA) && XCLOUD360_BETA
+    char k[80];
     int n = xc_store_load("BETAKEY.TXT", k, sizeof(k) - 1);
     if (n <= 0) return;
     k[n] = 0;
@@ -301,6 +302,9 @@ static void beta_header(char *out, size_t cap) {
     if (g_console[0]) snprintf(out, cap, "X-Api-Key: %s\r\nX-Console: %s\r\n", s, g_console);
     else snprintf(out, cap, "X-Api-Key: %s\r\n", s);
     memset(k, 0, sizeof(k));
+#else
+    (void)cap;
+#endif
 }
 
 /* ================================================================= check */

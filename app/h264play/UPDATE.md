@@ -40,10 +40,10 @@ Ponte: `~/scratch/server.py` no devbox = `cc360-vps:/root/xc360-logs/server.py`
 * Download: versão que está ou esteve no stable (marcador `releases/<v>/public`,
   posto pelo `release.py promote`) baixa sem chave; versão só do beta exige chave
   beta (401 sem).
-* O app manda `X-Api-Key` se existir `XC360/BETAKEY.TXT` no pendrive (lido com
-  `xc_store_load`, uma linha, `[A-Za-z0-9-]{8,64}`). Quando a API de beta do menu
-  existir, ela só precisa gravar esse arquivo — ou trocar `beta_header()` em
-  `xc_update.c` pela chamada dela.
+* A build pública (`BETA=0`, padrão) não manda `X-Api-Key` e ignora qualquer
+  `XC360/BETAKEY.TXT` antigo para ficar no canal público. Só a build fechada
+  (`BETA=1`) lê esse arquivo com `xc_store_load` (uma linha,
+  `[A-Za-z0-9-]{8,64}`) e manda a chave no header.
 * `?env=test` em qualquer rota = mesmo esquema em `releases-test/` (ensaio).
 
 ## Endpoints da ponte

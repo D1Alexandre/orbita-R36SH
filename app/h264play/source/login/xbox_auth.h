@@ -70,6 +70,8 @@ int xa_fetch_mru(const xa_endpoint_t *ep, int max, xa_title_t **out, int *n, xc_
 /* Nomes via displaycatalog pros títulos jogáveis sem nome. Melhor esforço:
  * retorna quantos nomes resolveu. `progress` pode ser NULL. */
 int xa_fetch_names(xa_title_t *t, int n, void (*progress)(int done, int total), xc_err_t *e);
+/* Mesmo transporte/cache, incluindo títulos sem acesso confirmado pela conta. */
+int xa_fetch_names_all(xa_title_t *t, int n, void (*progress)(int done, int total), xc_err_t *e);
 
 /* ---- partes puras (testadas no host) ---- */
 int  xa_parse_titles(const char *json, xa_title_t **out, int *n);
@@ -80,6 +82,8 @@ int  xa_merge_f2p(xa_title_t **main, int *nmain, const xa_title_t *ads, int nads
 int  xa_playable(const xa_title_t *t);
 /* Remove os não jogáveis e ordena por nome (sem caixa), como o launcher. */
 int  xa_finalize(xa_title_t *t, int n);
+/* Ordena o catálogo completo sem alterar as flags de acesso. */
+void xa_sort_titles(xa_title_t *t, int n);
 /* UTF-8 -> ASCII imprimível (acentos latinos viram a letra base, (TM)/(R)
  * somem), espaços colapsados, corta em cap-1 com "...". */
 void xa_ascii_fold(char *dst, size_t cap, const char *utf8);

@@ -351,6 +351,12 @@ static int has_line(const char *l) {
     return 0;
 }
 
+static int queue_has_info(const char *info) {
+    for (int i = 0; i < g_nlines; i++)
+        if (!strncmp(g_lines[i], "STATE\tQUEUE\t", 12) && strstr(g_lines[i], info)) return 1;
+    return 0;
+}
+
 static int line_index(const char *l) {
     for (int i = 0; i < g_nlines; i++) if (!strcmp(g_lines[i], l)) return i;
     return -1;
@@ -394,6 +400,7 @@ static void setup(srv_t *s, xsm_t *m, xsm_cfg_t *cfg) {
     g_mock_ctx = s;
     g_nlines = 0;
     mock_set_token("FAKE-REFRESH-0-xxxxxxxxxxxxxxxxxxxx\n");
+    xs_set_play_locale("en-US"); /* explicit locale used by GOLDEN_PLAY */
     xsm_cfg_defaults(cfg, TITLE, NAME);
     (void)m;
 }
@@ -567,8 +574,8 @@ static void test_queue(void) {
     xsm_init(&m, &cfg, NULL);
     xsm_phase_t p = run(&m, &s, 120000);
     CHECK(p == XSM_P_DONE, "fase final %s", xsm_phase_name(p));
-    CHECK(has_line("STATE\tQUEUE\tNa fila: ~10 min"), "fila com ETA do /v1/waittime");
-    CHECK(has_line("STATE\tQUEUE\tNa fila: posicao 3, <1 min"), "fila com posicao do /state");
+    CHECK(queue_has_info("estimativa ~10 min"), "fila com ETA do /v1/waittime");
+    CHECK(queue_has_info("posição 3"), "fila com posicao do /state");
     CHECK(s.n_wait == 1, "waittime 1x em 4s (a cada 30s): %d", s.n_wait);
     const mock_req_t *q = find_req("GET", "/v1/waittime/", 0);
     CHECK(q && !strcmp(q->path, "/v1/waittime/" TITLE), "path do waittime");

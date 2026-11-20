@@ -1,0 +1,6 @@
+# Launchers copied from Windows must retain Unix line endings on the handheld.
+app/r36s/packaging/*.sh text eol=lf
+tools/r36-probe.sh text eol=lf
+tools/r36-capabilities.sh text eol=lf
+deps/webrtc-linux/*.sh text eol=lf
+deps/webrtc-linux/*.patch text eol=lf

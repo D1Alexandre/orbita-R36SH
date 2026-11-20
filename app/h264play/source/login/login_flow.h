@@ -21,13 +21,16 @@ typedef struct {
 
 /* 0 = ok: *games (malloc, só jogáveis, ordenados por nome), *n. */
 int lf_run(const lf_ui_t *ui, xa_title_t **games, int *n, xc_err_t *e);
+/* include_unavailable != 0 mantém todo o catálogo, com flags de acesso intactas.
+ * Os nomes também são resolvidos para os títulos sem acesso confirmado. */
+int lf_run_catalog(const lf_ui_t *ui, xa_title_t **games, int *n, xc_err_t *e, int include_unavailable);
 
 /* Ganchos opcionais (menu de capas, source/catalog/xc_catalog.c). Rodam na
  * thread do login, então podem usar o pendrive (xc_store_*) e o HTTPS.
  *   on_start : começo do lf_run (antes de qualquer rede) — cache do menu;
  *   on_cloud : gsToken do xgpuweb ainda válido (ep) — ex. /v2/titles/mru;
  *              NUNCA guardar ep->token;
- *   on_titles: lista final (jogáveis, ordenada) logo antes do lf_run voltar.
+ *   on_titles: lista final ordenada (lf_run: só jogáveis; lf_run_catalog: conforme opção).
  * NULL (padrão) = nenhum gancho: comportamento idêntico ao de antes. */
 typedef struct {
     void (*on_start)(void);

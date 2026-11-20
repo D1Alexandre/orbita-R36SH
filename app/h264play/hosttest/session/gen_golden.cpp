@@ -55,7 +55,7 @@ int main() {
           {"highContrast", 0},
           {"locale", "en-US"},
           {"useIceConnection", false},
-          {"timezoneOffsetMinutes", 120},
+          {"timezoneOffsetMinutes", 180}, // Orbita default: Brasilia
           {"sdkType", "web"},
           {"osName", os}}},
         {"serverId", ""},

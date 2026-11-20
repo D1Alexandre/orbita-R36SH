@@ -108,7 +108,7 @@ static int device_login(const lf_ui_t *ui, char **refresh, xc_err_t *e) {
     return -1;
 }
 
-int lf_run(const lf_ui_t *ui, xa_title_t **games, int *ngames, xc_err_t *e) {
+int lf_run_catalog(const lf_ui_t *ui, xa_title_t **games, int *ngames, xc_err_t *e, int include_unavailable) {
     *games = NULL;
     *ngames = 0;
     memset(e, 0, sizeof(*e));
@@ -197,20 +197,34 @@ int lf_run(const lf_ui_t *ui, xa_title_t **games, int *ngames, xc_err_t *e) {
         free(cache);
     }
     int missing = 0;
-    for (int i = 0; i < n; i++) missing += xa_playable(&t[i]) && !t[i].name[0] && t[i].product[0];
+    for (int i = 0; i < n; i++) missing += (include_unavailable || xa_playable(&t[i])) && !t[i].name[0] && t[i].product[0];
     xc_log("[cat] nomes: %d do cache, faltam %d", cached, missing);
     if (missing > 0) {
-        ui_status(ui, "Buscando os nomes dos jogos...");
-        int got = xa_fetch_names(t, n, NULL, &e2);
+        char message[96];
+        snprintf(message, sizeof(message), "Buscando os nomes de %d jogos...", missing);
+        ui_status(ui, message);
+        int got = include_unavailable ? xa_fetch_names_all(t, n, NULL, &e2) : xa_fetch_names(t, n, NULL, &e2);
         xc_log("[cat] nomes resolvidos: %d", got);
         if (got > 0) {
             char *out = xa_names_to_cache(t, n);
             if (out) { xc_store_save(LF_NAMES_FILE, out, strlen(out)); free(out); }
         }
     }
-    n = xa_finalize(t, n);
+    if (include_unavailable) xa_sort_titles(t, n);
+    else n = xa_finalize(t, n);
+    if (xcn_cancelled()) {
+        free(t);
+        e->code = HTTPS_ECANCEL;
+        snprintf(e->msg, sizeof(e->msg), "catalogo cancelado");
+        return -1;
+    }
+    xc_log("[cat] exibindo %d titulos (catalogo=%s)", n, include_unavailable ? "completo" : "jogaveis");
     if (g_hooks.on_titles) g_hooks.on_titles(t, n);
     *games = t;
     *ngames = n;
     return 0;
+}
+
+int lf_run(const lf_ui_t *ui, xa_title_t **games, int *ngames, xc_err_t *e) {
+    return lf_run_catalog(ui, games, ngames, e, 0);
 }

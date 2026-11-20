@@ -425,8 +425,12 @@ static int cmp_title(const void *a, const void *b) {
 int xa_finalize(xa_title_t *t, int n) {
     int k = 0;
     for (int i = 0; i < n; i++) if (xa_playable(&t[i])) t[k++] = t[i];
-    qsort(t, (size_t)k, sizeof(xa_title_t), cmp_title);
+    xa_sort_titles(t, k);
     return k;
+}
+
+void xa_sort_titles(xa_title_t *t, int n) {
+    if (n > 1) qsort(t, (size_t)n, sizeof(xa_title_t), cmp_title);
 }
 
 /* GET autenticado no host da região que devolve {"results":[título...]}. */
@@ -483,7 +487,7 @@ int xa_parse_names(const char *json, xa_title_t *t, int n) {
     return got;
 }
 
-int xa_fetch_names(xa_title_t *t, int n, void (*progress)(int, int), xc_err_t *e) {
+static int fetch_names(xa_title_t *t, int n, int all, void (*progress)(int, int), xc_err_t *e) {
     int *idx = (int *)malloc(sizeof(int) * (size_t)(n + 1));
     if (!idx) return 0;
     /* v0.20.0: nomes em pt-BR (o mesmo mercado das capas, com acento); o
@@ -493,13 +497,14 @@ int xa_fetch_names(xa_title_t *t, int n, void (*progress)(int, int), xc_err_t *e
     for (int pass = 0; pass < 2; pass++) {
         int m = 0;
         for (int i = 0; i < n; i++) {
-            if (!xa_playable(&t[i]) || t[i].name[0] || !t[i].product[0]) continue;
+            if ((!all && !xa_playable(&t[i])) || t[i].name[0] || !t[i].product[0]) continue;
             int dup = 0;   /* vários títulos podem ter o mesmo produto */
-            for (int k = 0; k < m; k++) if (!strcmp(t[idx[k]].product, t[i].product)) { dup = 1; break; }
+            for (int k = 0; k < m; k++) if (!strcasecmp(t[idx[k]].product, t[i].product)) { dup = 1; break; }
             if (!dup) idx[m++] = i;
         }
         if (!m) break;
         if (pass) xc_log("[cat] nomes: %d sem nome em pt-BR, tentando en-US", m);
+        int failures = 0;
         for (int s = 0; s < m; s += NAMES_BATCH) {
             if (xcn_cancelled()) break;
             char path[96 + NAMES_BATCH * 24];
@@ -514,19 +519,33 @@ int xa_fetch_names(xa_title_t *t, int n, void (*progress)(int, int), xc_err_t *e
             if (rc == 0 && r.status == 200) {
                 int g = xa_parse_names(r.body, t, n);
                 if (g > 0) resolved += g;
+                failures = g < 0 ? failures + 1 : 0;
             } else if (rc != 0) {
                 xc_log("[cat] nomes: %s", e2.msg);
                 *e = e2;
+                failures++;
             } else {
                 xc_log("[cat] nomes: HTTP %d", r.status);
+                failures++;
             }
             https_free(&r);
             if (progress) progress(s + NAMES_BATCH < m ? s + NAMES_BATCH : m, m);
+            /* A full catalog can require hundreds of requests. A provider
+             * outage must leave the list usable instead of stalling on all. */
+            if (failures >= 3) break;
         }
         if (xcn_cancelled()) break;
     }
     free(idx);
     return resolved;
+}
+
+int xa_fetch_names(xa_title_t *t, int n, void (*progress)(int, int), xc_err_t *e) {
+    return fetch_names(t, n, 0, progress, e);
+}
+
+int xa_fetch_names_all(xa_title_t *t, int n, void (*progress)(int, int), xc_err_t *e) {
+    return fetch_names(t, n, 1, progress, e);
 }
 
 /* ----------------------------------------------------------- nome ASCII */

@@ -43,6 +43,10 @@ Thumbs.db
 logs/
 tools/xcloud-capture/output/
 
+# per-device R36S/H hardware reports (may contain local system details)
+diagnostics/r36sh/*.txt
+diagnostics/r36sh/*.log
+
 # embedded stream C arrays — regenerate via app/*/Makefile embedded target
 app/h264dec/source/embedded_stream.c
 app/h264play/source/embedded_stream.c
